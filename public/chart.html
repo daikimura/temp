@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      var formatDate = function (date, format) {
+        if (!format) format = 'YYYY-MM-DD hh:mm:ss.SSS';
+        format = format.replace(/YYYY/g, date.getFullYear());
+        format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
+        format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
+        format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
+        format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
+        format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
+        if (format.match(/S/g)) {
+          var milliSeconds = ('00' + date.getMilliseconds()).slice(-3);
+          var length = format.match(/S/g).length;
+          for (var i = 0; i < length; i++) format = format.replace(/S/, milliSeconds.substring(i, i + 1));
+        }
+        return format;
+      };
+
+      function drawChart() {
+        $.ajax({
+          url: 'http://52.192.136.234:3000/temp',
+          dataType: 'jsonp',
+          jsonpCallback: 'temp',
+          success: function(json){
+            var dt = new Date(json[0].registered_at);
+            var title =  json[0].temp + "℃ " + json[0].hum + "% " + json[0].pressure + "hPa (" + formatDate(dt, "YYYY-MM-DD hh:mm:ss") + ")";
+            json = json.reverse();
+            var array = [['Date', 'Temperature', 'Humidity', 'Pressure']];
+            for(var i = 0; i < json.length; i++) {
+              dt = new Date(json[i].registered_at);
+              dt = formatDate(dt, "MM/DD hh:mm");
+              array.push([dt, json[i].temp, json[i].hum, json[i].pressure]);
+            }
+            console.log(array);
+            var data = google.visualization.arrayToDataTable(array);
+
+            var options = {
+              title: title,
+              curveType: 'function',
+              legend: { position: 'bottom' },
+              series:[
+                {targetAxisIndex:0},
+                {targetAxisIndex:0},
+                {targetAxisIndex:1},
+              ],
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('temp_chart'));
+            chart.draw(data, options);
+          }
+        });
+      }
+
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+
+    </script>
+  </head>
+  <body>
+    <div id="temp_chart" style="width: 1200px; height: 600px"></div>
+  </body>
+</html>

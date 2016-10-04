@@ -6,9 +6,27 @@ var connection = mysql.createPool(config.db);
 var router = express.Router();
 var moment = require('moment-timezone');
 
+var formatDate = function (date, format) {
+  if (!format) format = 'YYYY-MM-DD hh:mm:ss.SSS';
+  format = format.replace(/YYYY/g, date.getFullYear());
+  format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
+  format = format.replace(/DD/g, ('0' + date.getDate()).slice(-2));
+  format = format.replace(/hh/g, ('0' + date.getHours()).slice(-2));
+  format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2));
+  format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2));
+  if (format.match(/S/g)) {
+    var milliSeconds = ('00' + date.getMilliseconds()).slice(-3);
+    var length = format.match(/S/g).length;
+    for (var i = 0; i < length; i++) format = format.replace(/S/, milliSeconds.substring(i, i + 1));
+  }
+  return format;
+};
+
 /* GET tepm listing. */
 router.get('/', function(req, res, next) {
-  connection.query('SELECT * FROM data ORDER BY registered_at DESC LIMIT 10', function (err, rows) {
+  var dt = new Date();
+  dt.setDate(dt.getDate() - 7);
+  connection.query("SELECT * FROM data WHERE registered_at >= '" + formatDate(dt, "YYYY-MM-DD hh:mm:ss") + "' ORDER BY registered_at DESC", function (err, rows) {
     res.contentType('application/json');
     if(!err && rows.length > 0) {
       var data = [];
@@ -20,7 +38,7 @@ router.get('/', function(req, res, next) {
           registered_at: moment(rows[i].registered_at).tz("Asia/Tokyo").format()
         });
       }
-      res.send(JSON.stringify(data));
+      res.send("temp(" + JSON.stringify(data) + ");");
     } else {
       res.send('{"status":"error"}');
     }
