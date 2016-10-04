@@ -21,7 +21,7 @@
 
       function drawChart() {
         $.ajax({
-          url: 'http://52.192.136.234:3000/temp',
+          url: 'http://' + window.location.hostname + ':3000/temp',
           dataType: 'jsonp',
           jsonpCallback: 'temp',
           success: function(json){
