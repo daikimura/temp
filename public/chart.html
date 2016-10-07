@@ -19,9 +19,12 @@
         return format;
       };
 
-      function drawChart() {
+      function drawChart(day) {
+        if(!day) {
+          day = 1;
+        }
         $.ajax({
-          url: 'http://' + window.location.hostname + ':3000/temp',
+          url: 'http://' + window.location.hostname + ':3000/temp?day=' + day,
           dataType: 'jsonp',
           jsonpCallback: 'temp',
           success: function(json){
@@ -60,6 +63,11 @@
     </script>
   </head>
   <body>
+    <div>
+      <button type="button" onclick="javascript:drawChart(1); return false;">1day</button>
+      <button type="button" onclick="javascript:drawChart(3); return false;">3days</button>
+      <button type="button" onclick="javascript:drawChart(7); return false;">7days</button>
+    </div>
     <div id="temp_chart" style="width: 1200px; height: 600px"></div>
   </body>
 </html>
