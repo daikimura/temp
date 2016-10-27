@@ -12,10 +12,19 @@ router.get('/', function(req, res, next) {
   if(req.query.day > 1) {
     days = req.query.day;
   }
-  var dt = new Date();
-  dt.setDate(dt.getDate() - days);
-  console.log(moment(dt).tz("UTC").format());
-  connection.query("SELECT * FROM data WHERE registered_at >= ? ORDER BY registered_at DESC", [moment(dt).tz("UTC").format()], function (err, rows) {
+  var page = 1;
+  if(req.query.page > 1) {
+    page = req.query.page;
+  }
+  var from_dt = new Date();
+  from_dt.setDate(from_dt.getDate() - (days * page));
+  var to_dt = new Date();
+  to_dt.setDate(to_dt.getDate() - (days * (page - 1)));
+
+  console.log(moment(from_dt).tz("UTC").format());
+  console.log(moment(to_dt).tz("UTC").format());
+
+  connection.query("SELECT * FROM data WHERE registered_at > ? AND registered_at <= ? ORDER BY registered_at DESC", [moment(from_dt).tz("UTC").format(), moment(to_dt).tz("UTC").format()], function (err, rows) {
     res.contentType('application/json');
     if(!err && rows.length > 0) {
       var data = [];
