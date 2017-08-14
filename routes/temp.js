@@ -21,18 +21,21 @@ router.get('/', function(req, res, next) {
   var to_dt = new Date();
   to_dt.setDate(to_dt.getDate() - (days * (page - 1)));
 
-  console.log(moment(from_dt).tz("UTC").format());
-  console.log(moment(to_dt).tz("UTC").format());
+  // console.log(moment(from_dt).tz("UTC").format());
+  // console.log(moment(to_dt).tz("UTC").format());
+  console.log(moment(from_dt).format());
+  console.log(moment(to_dt).format());
 
-  connection.query("SELECT * FROM data WHERE registered_at > ? AND registered_at <= ? ORDER BY registered_at DESC", [moment(from_dt).tz("UTC").format(), moment(to_dt).tz("UTC").format()], function (err, rows) {
+  // connection.query("SELECT * FROM data WHERE registered_at > ? AND registered_at <= ? ORDER BY registered_at DESC", [moment(from_dt).tz("UTC").format(), moment(to_dt).tz("UTC").format()], function (err, rows) {
+  connection.query("SELECT * FROM data WHERE registered_at > ? AND registered_at <= ? ORDER BY registered_at DESC", [moment(from_dt).format(), moment(to_dt).format()], function (err, rows) {
     res.contentType('application/json');
     if(!err && rows.length > 0) {
       var data = [];
       for(var i = 0; i < rows.length; i++) {
         data.push({
-          temp: rows[i].temp / 100.0,
-          pressure: rows[i].pressure / 10000.0,
-          hum: rows[i].hum / 100.0,
+          temp: rows[i].temp,
+          pressure: rows[i].pressure,
+          hum: rows[i].hum,
           registered_at: moment(rows[i].registered_at).tz("Asia/Tokyo").format()
         });
       }
